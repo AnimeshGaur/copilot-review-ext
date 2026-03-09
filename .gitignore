@@ -1,0 +1,32 @@
+# Build output
+out/
+dist/
+
+# Dependencies
+node_modules/
+
+# Package artifacts
+*.vsix
+
+# TypeScript
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor directories
+.idea/
+*.swp
+*.swo
+
+# Debug
+*.log
+npm-debug.log*
+
+# Test coverage
+coverage/

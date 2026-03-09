@@ -1,0 +1,167 @@
+{
+  "name": "copilot-review-ext",
+  "displayName": "Copilot Code Review",
+  "description": "AI-powered code review via GitHub Copilot Chat — supports PR diffs, local changes, and full workspace scans.",
+  "version": "0.1.0",
+  "publisher": "copilot-review",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/example/copilot-review"
+  },
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters",
+    "Other"
+  ],
+  "activationEvents": [
+    "onChatParticipant:copilotReview.review"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "copilotReview.reviewPR",
+        "title": "Copilot Review: Review Pull Request",
+        "icon": "$(git-pull-request)"
+      },
+      {
+        "command": "copilotReview.reviewLocalDiff",
+        "title": "Copilot Review: Review Local Diff",
+        "icon": "$(diff)"
+      },
+      {
+        "command": "copilotReview.reviewCodebase",
+        "title": "Copilot Review: Review Codebase",
+        "icon": "$(folder-opened)"
+      }
+    ],
+    "chatParticipants": [
+      {
+        "id": "copilotReview.review",
+        "name": "review",
+        "fullName": "Copilot Code Review",
+        "description": "AI-powered code review: analyze PRs, local diffs, or entire codebases for issues, security vulnerabilities, and improvements.",
+        "isSticky": false,
+        "commands": [
+          {
+            "name": "pr",
+            "description": "Review a GitHub Pull Request by URL"
+          },
+          {
+            "name": "diff",
+            "description": "Review uncommitted local changes"
+          },
+          {
+            "name": "codebase",
+            "description": "Scan the entire workspace for issues"
+          }
+        ]
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "copilotReview.reviewPR",
+          "when": "true"
+        },
+        {
+          "command": "copilotReview.reviewLocalDiff",
+          "when": "true"
+        },
+        {
+          "command": "copilotReview.reviewCodebase",
+          "when": "true"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "copilotReview.reviewPR",
+          "group": "copilotReview@1"
+        },
+        {
+          "command": "copilotReview.reviewLocalDiff",
+          "group": "copilotReview@2"
+        },
+        {
+          "command": "copilotReview.reviewCodebase",
+          "group": "copilotReview@3"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "copilotReview.reviewPR",
+          "group": "copilotReview@1"
+        },
+        {
+          "command": "copilotReview.reviewLocalDiff",
+          "group": "copilotReview@2"
+        },
+        {
+          "command": "copilotReview.reviewCodebase",
+          "group": "copilotReview@3"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Copilot Code Review",
+      "properties": {
+        "copilotReview.maxFiles": {
+          "type": "integer",
+          "default": 5000,
+          "description": "Maximum number of files to scan in codebase review mode."
+        },
+        "copilotReview.tokenCeiling": {
+          "type": "integer",
+          "default": 100000,
+          "description": "Maximum number of tokens allowed per review session."
+        },
+        "copilotReview.excludePatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "**/node_modules/**",
+            "**/dist/**",
+            "**/out/**",
+            "**/build/**",
+            "**/.git/**",
+            "**/vendor/**"
+          ],
+          "description": "Glob patterns of files and folders to exclude from workspace reviews."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "npm run build:format && npm run build:lint && npm run build:compile",
+    "build:compile": "tsc -p ./",
+    "build:lint": "eslint src --ext ts",
+    "build:format": "prettier --write \"src/**/*.ts\"",
+    "watch": "tsc -watch -p ./",
+    "vscode:prepublish": "npm run build",
+    "package": "vsce package"
+  },
+  "extensionDependencies": [
+    "github.copilot",
+    "github.copilot-chat"
+  ],
+  "dependencies": {
+    "@octokit/rest": "^20.0.0"
+  },
+  "devDependencies": {
+    "@types/eslint": "^8.56.12",
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.90.0",
+    "@typescript-eslint/eslint-plugin": "^8.56.1",
+    "@typescript-eslint/parser": "^8.56.1",
+    "@vscode/vsce": "^2.24.0",
+    "eslint": "^8.57.1",
+    "prettier": "^3.8.1",
+    "typescript": "^5.4.0"
+  }
+}
