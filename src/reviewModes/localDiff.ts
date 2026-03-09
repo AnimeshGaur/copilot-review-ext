@@ -15,6 +15,7 @@
 import * as vscode from "vscode";
 import type { DiffFile, IReviewMode, RepoMeta } from "../engine/types.js";
 import { parseUnifiedDiff } from "../utils/diffParser.js";
+import { logger } from "../utils/logger.js";
 
 /**
  * Minimal interface for the VS Code Git extension API.
@@ -78,6 +79,9 @@ export class LocalDiffReviewMode implements IReviewMode {
 
     // Run git diff with the selected scope
     const rawDiff = await this.runGitDiff(root, scope);
+    logger.info(
+      `LocalDiff: fetched ${rawDiff.length} chars of diff (scope: ${scope})`,
+    );
 
     if (rawDiff.trim().length === 0) {
       vscode.window.showInformationMessage(
@@ -182,6 +186,7 @@ export class LocalDiffReviewMode implements IReviewMode {
     const gitApi = gitExtension?.getAPI(1);
 
     if (!gitApi) {
+      logger.error("VS Code Git extension not available");
       throw new Error("VS Code Git extension is required but not available.");
     }
 

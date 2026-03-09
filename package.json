@@ -146,10 +146,6 @@
     "vscode:prepublish": "npm run build",
     "package": "vsce package"
   },
-  "extensionDependencies": [
-    "github.copilot",
-    "github.copilot-chat"
-  ],
   "dependencies": {
     "@octokit/rest": "^20.0.0"
   },

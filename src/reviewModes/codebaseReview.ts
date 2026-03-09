@@ -15,6 +15,7 @@
 import * as vscode from "vscode";
 import type { DiffFile, IReviewMode, RepoMeta } from "../engine/types.js";
 import { detectLanguage } from "../utils/languageDetector.js";
+import { logger } from "../utils/logger.js";
 
 /**
  * Maximum file size in bytes to include in the review (500 KB).
@@ -136,6 +137,8 @@ export class CodebaseReviewMode implements IReviewMode {
           "Some files may not have been reviewed. Use /diff for targeted review.",
       );
     }
+
+    logger.info(`CodebaseReview: found ${uris.length} file(s) to scan`);
 
     const files: DiffFile[] = [];
     this.languageCounts = new Map();

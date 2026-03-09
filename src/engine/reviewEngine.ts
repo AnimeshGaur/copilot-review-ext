@@ -25,6 +25,7 @@ import type {
   ReviewResult,
 } from "./types.js";
 import { isConfidenceLevel, isFindingSeverity, isLlmFinding } from "./types.js";
+import { logger } from "../utils/logger.js";
 
 /**
  * Copilot model family identifiers to try, in priority order.
@@ -55,15 +56,19 @@ async function selectBestModel(
     }
     const models = await vscode.lm.selectChatModels({ family });
     if (models.length > 0 && models[0] !== undefined) {
+      logger.info(`Selected model: ${models[0].name} (family: ${family})`);
       return models[0];
     }
+    logger.debug(`No models found for family: ${family}`);
   }
 
-  // Fallback: select any available model
   const allModels = await vscode.lm.selectChatModels();
   if (allModels.length > 0 && allModels[0] !== undefined) {
+    logger.info(`Fallback model selected: ${allModels[0].name}`);
     return allModels[0];
   }
+
+  logger.warn("No language models available");
 
   return undefined;
 }
@@ -244,6 +249,9 @@ export class ReviewEngine implements IReviewEngine {
       }
 
       const findings = this.parseResponse(fullResponse);
+      logger.info(
+        `Batch ${batch.batchIndex + 1}: parsed ${findings.length} finding(s) from ${fullResponse.length} chars`,
+      );
 
       return {
         batchIndex: batch.batchIndex,
@@ -252,6 +260,9 @@ export class ReviewEngine implements IReviewEngine {
       };
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : String(err);
+      logger.error(
+        `LLM error on batch ${batch.batchIndex + 1}: ${errorMessage}`,
+      );
       vscode.window.showWarningMessage(
         `Copilot Code Review: LLM error on batch ${batch.batchIndex + 1}: ${errorMessage}`,
       );

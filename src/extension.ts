@@ -30,6 +30,7 @@ import { SummaryPanelWriter } from "./outputs/summaryPanel.js";
 import { CodebaseReviewMode } from "./reviewModes/codebaseReview.js";
 import { LocalDiffReviewMode } from "./reviewModes/localDiff.js";
 import { PullRequestReviewMode } from "./reviewModes/prReview.js";
+import { logger } from "./utils/logger.js";
 
 /**
  * Shared diagnostics writer instance — persists across reviews
@@ -54,11 +55,16 @@ let summaryPanelWriter: SummaryPanelWriter | undefined;
  * @param context - VS Code extension context for managing subscriptions.
  */
 export function activate(context: vscode.ExtensionContext): void {
+  // Initialize logger first
+  logger.init();
+  logger.info("Copilot Code Review extension activating...");
+
   // Initialize shared services
   const authManager = new AuthSessionManager();
   const gitHubClient = new GitHubApiClient(authManager);
   const contextManager = new ContextWindowManager();
   const promptBuilder = new PromptBuilder();
+  logger.debug("Shared services initialized");
 
   // Initialize shared output writers
   diagnosticsWriter = new InlineDiagnosticsWriter();
@@ -76,6 +82,11 @@ export function activate(context: vscode.ExtensionContext): void {
       },
     },
   );
+
+  const logChannel = logger.getChannel();
+  if (logChannel !== undefined) {
+    context.subscriptions.push(logChannel);
+  }
 
   // ── Command: Review Pull Request ────────────────────────────────────
   const prCommand = vscode.commands.registerCommand(
@@ -151,6 +162,8 @@ export function activate(context: vscode.ExtensionContext): void {
     codebaseCommand,
     chatParticipant,
   );
+
+  logger.info("Copilot Code Review extension activated successfully");
 }
 
 /**
@@ -192,7 +205,9 @@ async function runCommandReview(
       async (progress, token) => {
         progress.report({ message: "Fetching changes...", increment: 0 });
 
+        logger.info(`Starting ${mode.name} review...`);
         const files = await mode.getDiffs(token);
+        logger.info(`Fetched ${files.length} file(s) for review`);
 
         if (files.length === 0) {
           vscode.window.showInformationMessage(
@@ -232,11 +247,16 @@ async function runCommandReview(
           `Copilot Code Review: Found ${result.findings.length} issue(s) ` +
             `(${result.uncertainFindings.length} uncertain).`,
         );
+
+        logger.info(
+          `Review complete: ${result.findings.length} findings, ${result.uncertainFindings.length} uncertain`,
+        );
       },
     );
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     if (!message.includes("cancelled")) {
+      logger.error(`Review failed: ${message}`);
       vscode.window.showErrorMessage(`Copilot Code Review: ${message}`);
     }
   }
